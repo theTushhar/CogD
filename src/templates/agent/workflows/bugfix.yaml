@@ -1,0 +1,12 @@
+name: bugfix
+
+steps:
+  - identify_issue
+  - analyze_architecture
+  - search_memory
+  - generate_hypotheses
+  - validate_hypotheses
+  - implement_fix
+  - review_changes
+  - update_memory
+  - generate_reflection

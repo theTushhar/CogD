@@ -1,0 +1,12 @@
+name: release
+
+steps:
+  - verify_branch
+  - run_full_test_suite
+  - check_dependencies
+  - update_changelog
+  - bump_version
+  - create_tag
+  - build_artifacts
+  - publish_release
+  - update_documentation

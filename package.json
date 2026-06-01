@@ -1,0 +1,21 @@
+{
+  "name": "cog",
+  "version": "0.2.0",
+  "description": "Cog — persistent autonomous cognition runtime. Provider-agnostic agent daemon for any project.",
+  "type": "module",
+  "bin": {
+    "cog": "./src/cli.js",
+    "cogd": "./src/daemon.js"
+  },
+  "scripts": {
+    "start": "node ./src/daemon.js start",
+    "stop": "node ./src/daemon.js stop",
+    "status": "node ./src/cli.js status",
+    "doctor": "node ./src/cli.js doctor",
+    "goal": "node ./src/cli.js goal"
+  },
+  "dependencies": {},
+  "engines": {
+    "node": ">=22"
+  }
+}

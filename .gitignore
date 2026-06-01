@@ -1,0 +1,35 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build and output
+dist/
+build/
+*.log
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS specific
+.DS_Store
+Thumbs.db
+
+# Environment and Secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Test coverage
+coverage/
+.nyc_output
+
+# Cog-specific ignores (if any transient state is added later)
+#.agent/sessions/active/*
+#.agent/locks/*
+
+# .agent/ is version-controlled — cognition layer travels with the repo
+!.agent/

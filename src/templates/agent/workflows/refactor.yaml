@@ -1,0 +1,11 @@
+name: refactor
+
+steps:
+  - analyze_codebase
+  - identify_patterns
+  - plan_refactoring
+  - apply_changes
+  - verify_behavior
+  - update_tests
+  - update_docs
+  - store_knowledge

@@ -1,0 +1,11 @@
+name: review
+
+steps:
+  - fetch_changes
+  - load_conventions
+  - analyze_diff
+  - check_architecture
+  - security_scan
+  - verify_tests
+  - write_report
+  - approve_or_request_changes
