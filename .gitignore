@@ -32,4 +32,4 @@ coverage/
 #.agent/locks/*
 
 # .agent/ is version-controlled — cognition layer travels with the repo
-!.agent/
+.agent/

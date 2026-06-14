@@ -72,7 +72,7 @@ Output your plan in JSON format:
 Only output the JSON.`;
 
     try {
-      const result = await provider.execute({ goal: "Decompose goal" }, { architecture: "Cog Persistence Runtime" }, {});
+      const result = await provider.execute({ goal: prompt }, { architecture: "Cog Persistence Runtime" }, {});
       if (result.status === "completed") {
         const match = result.summary.match(/\{[\s\S]*\}/);
         if (match) {

@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 export class PatchManager {
   constructor(patchesDir) {
@@ -17,6 +18,49 @@ export class PatchManager {
     };
     this.#save(record);
     return record;
+  }
+
+  apply(patchId) {
+    const record = this.get(patchId);
+    if (!record) return { success: false, error: "Patch record not found" };
+
+    const results = [];
+    for (const patch of record.patches) {
+      if (!patch.file) {
+        results.push({ file: "unknown", success: false, error: "Missing file field" });
+        continue;
+      }
+      const filePath = path.resolve(process.cwd(), patch.file);
+      if (!patch.diff || !patch.diff.trim()) {
+        results.push({ file: patch.file, success: false, error: "Empty diff" });
+        continue;
+      }
+
+      const isUnifiedDiff = patch.diff.includes("@@") || (patch.diff.includes("---") && patch.diff.includes("+++"));
+
+      if (isUnifiedDiff) {
+        const tempPath = path.join(this.patchesDir, `temp-${Date.now()}.patch`);
+        try {
+          fs.writeFileSync(tempPath, patch.diff);
+          execSync(`git apply --whitespace=fix "${tempPath}"`, { stdio: "pipe" });
+          results.push({ file: patch.file, success: true, method: "git apply" });
+        } catch (err) {
+          results.push({ file: patch.file, success: false, error: `Git apply failed: ${err.message}` });
+        } finally {
+          if (fs.existsSync(tempPath)) fs.rmSync(tempPath);
+        }
+      } else {
+        try {
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(filePath, patch.diff);
+          results.push({ file: patch.file, success: true, method: "overwrite" });
+        } catch (err) {
+          results.push({ file: patch.file, success: false, error: `Overwrite failed: ${err.message}` });
+        }
+      }
+    }
+
+    return { success: results.every(r => r.success), results };
   }
 
   get(patchId) {

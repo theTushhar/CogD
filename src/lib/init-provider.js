@@ -18,6 +18,7 @@ const PROVIDER_MAP = {
   openclaude: { template: "openclaude.md", output: "OPENCLAUDE.md" },
   gemini: { template: "gemini.md", output: "GEMINI.md" },
   copilot: { template: "copilot.md", output: "COPILOT.md" },
+  antigravity: { template: "antigravity.md", output: "ANTIGRAVITY.md" },
 };
 
 export const SUPPORTED_PROVIDERS = Object.keys(PROVIDER_MAP);

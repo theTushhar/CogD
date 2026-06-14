@@ -24,7 +24,7 @@ function printUsage() {
   console.log(`cog commands
 
   init                   create the .agent workspace
-  init <provider>        generate provider .md (opencode, claude, gemini)
+  init <provider>        generate provider .md (opencode, claude, gemini, antigravity)
   remove                 remove .agent workspace and clean up
   task list [status]     list tasks, optionally filtered by status
   task show <id>         show details of a specific task
@@ -45,14 +45,17 @@ function printUsage() {
   review list            list reviews
   review show <id>       show review details
   patch list             list recent patches
+  patch apply <id>       apply a specific patch file to workspace
   workflow list          list available workflows
   workflow show <name>   show workflow steps
+  workflow run <name>    run a specific workflow
 
   resume [task]          show continuity resume capsule
   finalize [status] [summary]  save execution summary
   work-state [start|update|close]  manage active work state
   decision [record <title> <decision>]  manage project decisions
   continuity-view        generate continuity report and map
+  mcp                    start the MCP server stdio transport
 `);
 }
 
@@ -365,7 +368,7 @@ function showAgents() {
 
 function showProviders() {
   console.log("available providers (auto-detected):");
-  console.log("  claude, openclaude, opencode, codex, gemini, openhands");
+  console.log("  claude, openclaude, opencode, codex, gemini, openhands, antigravity");
 }
 
 function showPlan() {
@@ -990,8 +993,24 @@ switch (command) {
   case "patch":
     if (args[0] === "list") {
       showPatches();
+    } else if (args[0] === "apply") {
+      if (!args[1]) {
+        console.error("cog patch apply <patch-id>");
+        process.exitCode = 1;
+        break;
+      }
+      const { PatchManager } = await import("./lib/patches.js");
+      const paths = getAgentPaths();
+      const patches = new PatchManager(paths.patchesDir);
+      const res = patches.apply(args[1]);
+      if (res.success) {
+        console.log("Patches applied successfully:", res.results);
+      } else {
+        console.error("Some patches failed to apply:", res.error || res.results);
+        process.exitCode = 1;
+      }
     } else {
-      console.error("usage: cog patch list");
+      console.error("usage: cog patch list | cog patch apply <patch-id>");
       process.exitCode = 1;
     }
     break;
@@ -1006,8 +1025,24 @@ switch (command) {
         break;
       }
       showWorkflows(args[1]);
+    } else if (args[0] === "run") {
+      if (!args[1]) {
+        console.error("cog workflow run <name>");
+        process.exitCode = 1;
+        break;
+      }
+      const { Runtime } = await import("./lib/runtime.js");
+      const runtime = new Runtime(getAgentPaths());
+      try {
+        console.log(`Running workflow: ${args[1]}`);
+        const results = await runtime.workflows.execute(args[1], { goal: "manual run" });
+        console.log("Workflow completed:", results);
+      } catch (err) {
+        console.error("Workflow failed:", err.message);
+        process.exitCode = 1;
+      }
     } else {
-      console.error("usage: cog workflow list | cog workflow show <name>");
+      console.error("usage: cog workflow list | cog workflow show <name> | cog workflow run <name>");
       process.exitCode = 1;
     }
     break;
@@ -1030,6 +1065,14 @@ switch (command) {
 
   case "continuity-view":
     cmdContinuityView();
+    break;
+
+  case "mcp":
+    {
+      const { Runtime } = await import("./lib/runtime.js");
+      const runtime = new Runtime(getAgentPaths());
+      runtime.mcp.start();
+    }
     break;
 
   case undefined:

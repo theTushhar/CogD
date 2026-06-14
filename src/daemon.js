@@ -180,6 +180,7 @@ function providerCommandInfo(name) {
     gemini: { cmd: "gemini", args: [] },
     copilot: { cmd: "copilot", args: [] },
     openhands: { cmd: "openhands", args: [] },
+    antigravity: { cmd: "antigravity", args: [] },
   };
   return map[name] || null;
 }
@@ -311,24 +312,36 @@ function startDaemon() {
 function findDaemonPid() {
   try {
     const isWin = process.platform === "win32";
-    let output;
     if (isWin) {
-      output = execSync('tasklist /V /FO CSV /FI "IMAGENAME eq node.exe"', {
-        encoding: "utf8",
-        timeout: 5000,
-      });
-      const lines = output.split("\n").filter(Boolean);
-      for (const line of lines) {
-        if (line.includes("daemon.js")) {
-          const parts = line.split('","');
-          const pid = Number(parts[1]);
-          if (Number.isFinite(pid)) {
-            return pid;
+      try {
+        const cmd = `powershell -Command "Get-CimInstance Win32_Process -Filter \\"Name = 'node.exe'\\" | Select-Object ProcessId, CommandLine | ConvertTo-Json -Compress"`;
+        const output = execSync(cmd, { encoding: "utf8", timeout: 5000 }).trim();
+        if (output) {
+          const parsed = JSON.parse(output);
+          const processes = Array.isArray(parsed) ? parsed : [parsed];
+          for (const proc of processes) {
+            if (proc && proc.CommandLine && proc.CommandLine.includes("daemon.js")) {
+              const pid = Number(proc.ProcessId);
+              if (Number.isFinite(pid)) return pid;
+            }
+          }
+        }
+      } catch {
+        const output = execSync('tasklist /V /FO CSV /FI "IMAGENAME eq node.exe"', {
+          encoding: "utf8",
+          timeout: 5000,
+        });
+        const lines = output.split("\n").filter(Boolean);
+        for (const line of lines) {
+          if (line.includes("daemon.js")) {
+            const parts = line.split('","');
+            const pid = Number(parts[1]);
+            if (Number.isFinite(pid)) return pid;
           }
         }
       }
     } else {
-      output = execSync("ps -eo pid,args", { encoding: "utf8", timeout: 5000 });
+      const output = execSync("ps -eo pid,args", { encoding: "utf8", timeout: 5000 });
       const lines = output.split("\n").filter(Boolean);
       for (const line of lines) {
         if (line.includes("daemon.js")) {
