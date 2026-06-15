@@ -214,4 +214,11 @@ export class KnowledgeGraph {
 
     return out;
   }
+
+  getGraphData() {
+    return {
+      nodes: Array.from(this.#nodes.values()),
+      edges: this.#edges
+    };
+  }
 }

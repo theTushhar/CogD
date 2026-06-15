@@ -16,6 +16,7 @@ import { MCPServer } from "./mcp.js";
 import { ContinuityManager } from "./continuity.js";
 import { KnowledgeGraph } from "./graph.js";
 import { Planner } from "./planner.js";
+import { DashboardServer } from "./dashboard.js";
 
 export class Runtime {
   #pendingTasks = new Map();
@@ -38,6 +39,7 @@ export class Runtime {
     this.patches = new PatchManager(paths.patchesDir);
     this.mcp = new MCPServer(paths, this);
     this.continuity = new ContinuityManager(paths, this.bus);
+    this.dashboard = new DashboardServer(paths, this);
   }
 
   start() {
@@ -50,6 +52,7 @@ export class Runtime {
     this.#registerCoreHandlers();
 
     this.inbox.start();
+    this.dashboard.start();
 
     this.bus.emit("runtime:started", { at: new Date().toISOString() });
   }
@@ -57,6 +60,7 @@ export class Runtime {
   stop() {
     this.inbox.stop();
     this.context.stopAutoRefresh();
+    this.dashboard.stop();
     this.bus.emit("runtime:stopped", { at: new Date().toISOString() });
   }
 
